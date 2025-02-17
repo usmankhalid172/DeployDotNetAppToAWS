@@ -1,0 +1,126 @@
+Deploying a .NET application on AWS depends on the type of app (Web API, Blazor, MVC, console) and the AWS service you want to use. Here’s a general guide for deployi
+
+ng a .NET Web API or Blazor Server App:
+1. Choose a Deployment Target
+AWS provides multiple options for hosting a .NET application:
+
+Amazon EC2 (Elastic Compute Cloud) – Full control over an EC2 virtual machine.
+AWS Elastic Beanstalk – PaaS service for automatic deployment and scaling.
+AWS Lambda – Serverless deployment (for .NET Core functions).
+Amazon ECS (Elastic Container Service) / EKS (Elastic Kubernetes Service) – Containerized deployment.
+AWS App Runner – Simplified hosting for containerized .NET apps.
+For a typical Web API or Blazor Server app, Elastic Beanstalk or EC2 is a good choice.
+
+
+2. Prerequisites
+Ensure you have the following installed:
+
+.NET SDK (for building the application)
+AWS CLI (for AWS commands) → Install AWS CLI
+AWS Toolkit for Visual Studio (optional, for easier deployment)
+
+3. Deploy to AWS Elastic Beanstalk (Recommended for Web Apps)
+This method automates deployment and scaling.
+
+Step 1: Install AWS Elastic Beanstalk CLI
+pip install awsebcli --upgrade --user
+Verify installation:
+eb --version
+Step 2: Configure AWS Credentials
+aws configure
+Enter:
+
+AWS Access Key
+AWS Secret Key
+Region (e.g., us-east-1)
+Default output format (leave blank or enter json)
+
+
+Step 3: Create a .NET Build
+In your .NET project directory, run:
+dotnet publish -c Release -o publish
+
+Step 4: Initialize Elastic Beanstalk
+eb init -p "net7.0" my-dotnet-app
+(Replace net7.0 with your .NET version)
+
+Step 5: Create and Deploy Environment
+eb create my-dotnet-env
+
+Wait for AWS to provision resources. Once complete, run:
+eb open
+This opens the deployed application in your browser.
+
+4. Deploy to Amazon EC2 (Manual Deployment)
+If you need more control, deploy your .NET app to an EC2 instance.
+
+Step 1: Launch an EC2 Instance
+Go to AWS Console → EC2 → Launch Instance.
+Choose an Amazon Linux 2 or Windows Server AMI.
+Select instance type (e.g., t2.micro for free-tier).
+Configure security group (allow HTTP (80) and RDP (3389) or SSH (22)).
+Launch the instance and download the key pair.
+
+Step 2: Connect to EC2
+For Linux:
+
+ssh -i my-key.pem ec2-user@your-ec2-public-ip
+
+For Windows, use RDP (Remote Desktop Protocol).
+
+Step 3: Install .NET on EC2
+For Amazon Linux 2:
+sudo yum update -y
+sudo yum install dotnet-sdk-7.0 -y
+For Windows, download the .NET Runtime from Microsoft.
+
+Step 4: Upload and Run Your Application
+
+Upload the published .NET app (publish folder) via SCP or FTP.
+Start the app on Linux:
+
+cd publish
+dotnet myapp.dll
+On Windows, run it using IIS or dotnet CLI.
+
+5. Deploy as a Docker Container (ECS or App Runner)
+If your app is containerized, deploy using Amazon ECS or AWS App Runner.
+
+Step 1: Create a Dockerfile
+Inside your .NET project, create a Dockerfile:
+
+FROM mcr.microsoft.com/dotnet/aspnet:7.0
+WORKDIR /app
+COPY publish .
+ENTRYPOINT ["dotnet", "myapp.dll"]
+
+Step 2: Build and Push Docker Image to Amazon ECR
+
+Authenticate with AWS
+aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin <AWS_ACCOUNT_ID>.dkr.ecr.us-east-1.amazonaws.com
+
+Create a repository:
+aws ecr create-repository --repository-name my-dotnet-app
+
+Tag and push image:
+docker tag my-dotnet-app:latest <AWS_ACCOUNT_ID>.dkr.ecr.us-east-1.amazonaws.com/my-dotnet-app:latest
+docker push <AWS_ACCOUNT_ID>.dkr.ecr.us-east-1.amazonaws.com/my-dotnet-app:latest
+
+Deploy it to ECS or App Runner.
+
+6. Configure a Domain and SSL (Optional)
+Use Amazon Route 53 to manage a custom domain.
+Use AWS Certificate Manager to enable HTTPS.
+Configure Application Load Balancer (ALB) for auto-scaling.
+
+7. Monitor and Scale
+Use AWS CloudWatch for monitoring logs.
+Use Auto Scaling Groups (ASG) to handle traffic surges.
+
+Conclusion
+For easy deployment, use Elastic Beanstalk.
+For more control, use EC2.
+For containerized apps, use ECS or App Runner.
+For serverless, use AWS Lambda (for lightweight APIs).
+
+
