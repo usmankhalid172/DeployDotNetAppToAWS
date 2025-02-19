@@ -1,3 +1,4 @@
+Here the steps of Deployment you APP in AWS you can use this for deployment
 Deploying a .NET application on AWS depends on the type of app (Web API, Blazor, MVC, console) and the AWS service you want to use. Here’s a general guide for deployi
 
 ng a .NET Web API or Blazor Server App:
